@@ -25,7 +25,7 @@ df_a = df.withColumn('Ed_Class', lit(None).cast(StringType()))
 
 k_list = ["%TADIKA%", "%TABIK%","%TASKA%", "%LITTLE%", "%KIDS%", "%KID%", "%PRESCHOOL%", "%PRA%", "%KINDERGARTEN%", "%KINDERLAND%", "%KANAK%"]
 
-p_list = ["%SK%","%PRIMARY%","%SEKOLAH%", '%KEBANGSAAN%', '%SJKC%']
+p_list = ["SK%","%PRIMARY%","%SEKOLAH%", '%KEBANGSAAN%', '%SJKC%']
 
 s_list = ["%SMK%", "%MENENGAH%"]
 
@@ -34,18 +34,15 @@ s_list = ["%SMK%", "%MENENGAH%"]
 
 for i in k_list:
     df_a = df_a.withColumn('Ed_Class_1',F.when(F.col("NAME").like(i), "Kindergarten").otherwise(F.col('Ed_Class')))
-
-df_a = df_a.drop('Ed_Class').withColumnRenamed('Ed_Class_1', 'Ed_Class')
+    df_a = df_a.drop('Ed_Class').withColumnRenamed('Ed_Class_1', 'Ed_Class')
 
 for i in p_list:
-    df_a = df_a.withColumn('Ed_Class_1',F.when(F.col("NAME").like(i), "Primary").otherwise(F.col('Ed_Class')))
-
-df_a = df_a.drop('Ed_Class').withColumnRenamed('Ed_Class_1', 'Ed_Class')
+    df_a = df_a.withColumn('Ed_Class_1',F.when(F.col("NAME").like(i) & F.col('MAIN_CLASS').like('ELEMENTARY AND SECONDARY SCHOOLS'), "Primary").otherwise(F.col('Ed_Class')))
+    df_a = df_a.drop('Ed_Class').withColumnRenamed('Ed_Class_1', 'Ed_Class')
 
 for i in s_list:
     df_a = df_a.withColumn('Ed_Class_1',F.when(F.col("NAME").like(i), "Secondary").otherwise(F.col('Ed_Class')))
-
-df_a = df_a.drop('Ed_Class').withColumnRenamed('Ed_Class_1', 'Ed_Class')
+    df_a = df_a.drop('Ed_Class').withColumnRenamed('Ed_Class_1', 'Ed_Class')
 
 # Check if all labels are there
 
@@ -55,5 +52,5 @@ df_a.select('NAME','Ed_Class').filter(F.col('Ed_Class')=='Secondary').take(10)
 
 # Write fileoutput
 
-output = 's3a://ada-dev/ishti/erandi_bowser_poi_MY_1/'
+output = 's3a://ada-dev/ishti/erandi_bowser_poi_MY_X/'
 df_a.write.format("parquet").option("compression", "snappy").save(output)
